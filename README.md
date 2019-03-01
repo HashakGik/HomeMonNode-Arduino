@@ -7,6 +7,8 @@ Introduction
 The HomeMon project is a simple wireless sensor network for domotic use.
 It comprises sensor nodes which broadcast their state over a meshed peer-to-peer network and a [viewer application](https://github.com/HashakGik/HomeMon-MFC-Cpp) capable of displaying data received from a sink node.
 
+This Arduino nano sketch uses the [HomeMon node shield](https://github.com/HashakGik/HomeMonNode-Shield-Arduino-Nano).
+
 Each node can sense up to eleven local and thirty-two remote signals, and drive up to two actuators when triggering conditions are met.
 
 For debugging purposes, a [node emulator](https://github.com/HashakGik/HomeMon-Node-Emulator-Ruby) is also available.
