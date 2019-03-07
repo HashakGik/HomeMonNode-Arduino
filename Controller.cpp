@@ -16,8 +16,68 @@ void help()
 	Serial.println(F("Available signal types are: analog (1 pin), digital (1 pin), temperature (1 pin), humidity (1 pin), sonar (2 pins)"));
 }
 
+extern unsigned int __heap_start;
+extern void *__brkval;
+struct __freelist
+{
+	size_t sz;
+	struct __freelist *nx;
+};
+extern struct __freelist *__flp;
+
 void print()
 {
+	int mem = 0;
+	if ((int)__brkval == 0)
+	{
+		mem = ((int)&mem) - ((int)&__heap_start);
+	}
+	else
+	{
+		mem = ((int)&mem) - ((int)__brkval);
+		struct __freelist *current;
+		for (current = __flp; current; current = current->nx)
+		{
+			mem += 2;
+			mem += (int)current->sz;
+		}
+	}
+
+	Serial.print(F("Available ram: "));
+	Serial.print(mem);
+	Serial.println(F(" bytes"));
+
+	Serial.print(F("Remote signals memory usage: "));
+	Serial.print(sizeof(RemoteSignal) * remotecount + sizeof(remotes));
+	Serial.print(F(" / "));
+	Serial.print(sizeof(RemoteSignal) * MAX_REMOTES_NUMBER + sizeof(remotes));
+	Serial.println(F(" bytes"));
+
+	mem = sizeof(signals);
+	for (int i = 0; i < count; i++)
+		switch (signals[i]->type)
+		{
+		case ANALOG:
+			mem += sizeof(AnalogSignal);
+			break;
+		case DIGITAL:
+			mem += sizeof(DigitalSignal);
+			break;
+		case SONAR:
+			mem += sizeof(SonarSignal);
+			break;
+		case HUMIDITY:
+			mem += sizeof(HumiditySignal);
+			break;
+		case TEMPERATURE:
+			mem += sizeof(TemperatureSignal);
+			break;
+		}
+
+	Serial.print(F("Local signals memory usage: "));
+	Serial.print(mem);
+	Serial.println(F(" bytes"));
+
 	Serial.print(F("Refresh rate: "));
 	Serial.print(refresh);
 	Serial.println(F(" ms"));
@@ -40,7 +100,7 @@ void print()
 				Serial.print(F(" != "));
 				break;
 			case LESS_THAN:
-				Serial.print(F(" > "));
+				Serial.print(F(" < "));
 				break;
 			case LESS_THAN_EQUAL:
 				Serial.print(F(" <= "));

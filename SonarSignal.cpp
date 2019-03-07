@@ -13,5 +13,5 @@ SonarSignal::~SonarSignal()
 
 int SonarSignal::Get()
 {
-	return (int)(this->sonar.read() * 100);
+	return this->sonar.read();
 }

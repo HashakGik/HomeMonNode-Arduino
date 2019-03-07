@@ -30,7 +30,7 @@ const unsigned long int default_refresh = 1000; // Default refresh rate to be us
 const char bluetooth_name[] = "HomeMon sink"; // Name of the bluetooth module.
 const char bluetooth_pin[] = "0000"; // Pin of the bluetooth module.
 
-char radio_buf[20];
+char radio_buf[21];
 actuator_t act[ACTUATORS_NUMBER];
 Signal *signals[SIGNALS_NUMBER];
 RemoteSignal *remotes[MAX_REMOTES_NUMBER];
@@ -43,7 +43,8 @@ RF24 *radio = nullptr;
 bool data_available = false;
 bool radio_connected = false;
 
-void setup() {
+void setup()
+{
 #ifdef BLUETOOTH_AT
 	Serial.begin(38400);
 	Serial.print(F("AT+NAME=\""));
@@ -60,7 +61,7 @@ void setup() {
 
 	Serial.begin(9600);
 	pinMode(10, OUTPUT); // Prevents the Arduino from being accidentally put into SPI slave mode.
-	
+
 	for (int i = 0; i < ACTUATORS_NUMBER; i++)
 	{
 		act[i].comparator = EQUAL;
@@ -90,12 +91,12 @@ void setup() {
 
 }
 
-void loop() {
-
+void loop()
+{
 	if (data_available)
 	{
-		reroute();
 		data_available = false;
+		reroute();
 	}
 	else
 	{
@@ -112,5 +113,6 @@ void loop() {
 
 void interrupt(void)
 {
-	data_available = true;
+	bool a, b;
+	radio->whatHappened(a, b, data_available); // Clears the radio interrupt registers.
 }

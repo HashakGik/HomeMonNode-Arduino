@@ -7,8 +7,11 @@ void initRadio()
 	radio_connected = radio->begin();
 	if (radio_connected)
 	{
-		radio->setPALevel(RF24_PA_HIGH);
-		radio->setAutoAck(true);
+		radio->setPALevel(RF24_PA_MAX);
+		radio->setDataRate(RF24_2MBPS);
+		radio->setCRCLength(RF24_CRC_16);
+		radio->setAutoAck(false);
+		radio->enableDynamicAck();
 		radio->enableDynamicPayloads();
 
 		radio->maskIRQ(true, true, false); // Mask all the interrupt except the one raised when a packet is received.
@@ -23,6 +26,8 @@ void initRadio()
 		radio = nullptr;
 	}
 
+	for (int i = 0; i < MAX_REMOTES_NUMBER; i++)
+		remotes[i] = nullptr;
 	remotecount = 0;
 }
 
@@ -35,7 +40,7 @@ void reroute()
 	if (radio_connected)
 	{
 		if (radio->available())
-			radio->read(radio_buf, sizeof(char) * 20);
+			radio->read(radio_buf, sizeof(char) * 21);
 
 		for (i = 0; i < 16; i++)
 			tmp[i] = radio_buf[i];
@@ -48,7 +53,6 @@ void reroute()
 			val |= bitRead(radio_buf[18], i) << (i + 16);
 			val |= bitRead(radio_buf[19], i) << (i + 24);
 		}
-
 		found = false;
 		for (i = 0; !found && i < count; i++)
 		{
@@ -58,18 +62,32 @@ void reroute()
 		}
 		if (!found) // Received a signal other than the local ones.
 		{
-			for (i = 0, found = false; !found && i < remotecount; i++)
+			for (i = 0, found = false; !found && i < MAX_REMOTES_NUMBER; i++)
 			{
-				found = true;
-				for (int j = 0; j < 16; j++)
-					found &= remotes[i]->label[j] == tmp[j];
+				if (remotes[i] != nullptr)
+				{
+					found = true;
+					for (int j = 0; j < 16; j++)
+						found &= remotes[i]->label[j] == tmp[j];
+				}
 			}
 			if (found)
-				remotes[i - 1]->Set(val);
+				remotes[i - 1]->Set(val, radio_buf[20]);
 			else
 			{
-				remotes[remotecount++] = new RemoteSignal(tmp);
-				remotes[remotecount - 1]->Set(val);
+				if (remotes[remotecount] == nullptr)
+					remotes[remotecount] = new RemoteSignal(tmp);
+				else
+				{
+					for (int i = 0; i < 16; i++)
+						remotes[remotecount]->label[i] = tmp[i];
+
+					remotes[remotecount]->hops = 0xff;
+				}
+
+				remotes[remotecount]->Set(val, radio_buf[20]);
+
+				remotecount = (remotecount + 1) % MAX_REMOTES_NUMBER; // Remotes is a circular buffer.
 			}
 		}
 	}
@@ -93,10 +111,12 @@ void broadcast(char *str, int val)
 			radio_buf[19] |= bitRead(val, i + 24) << i;
 		}
 
+		radio_buf[20] = MAX_HOPS;
+
 		radio->stopListening();
 		radio->openWritingPipe(PIPE);
-		radio->writeFast(radio_buf, sizeof(char) * 20);
-		radio->txStandBy(1000);
+		radio->writeFast(radio_buf, sizeof(char) * 21, true);
+		radio->txStandBy(200);
 		radio->openReadingPipe(0, PIPE);
 		radio->startListening();
 	}

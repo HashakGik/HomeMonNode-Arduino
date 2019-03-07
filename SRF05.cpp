@@ -9,8 +9,11 @@ SRF05::SRF05(int trigger_pin, int echo_pin)
 	pinMode(this->echo_pin, INPUT);
 }
 
-double SRF05::read()
+int SRF05::read()
 {
+	int ret;
+
+	noInterrupts();
 	// Send a 10 us trigger pulse.
 	digitalWrite(this->trigger_pin, LOW);
 	delayMicroseconds(2);
@@ -19,5 +22,8 @@ double SRF05::read()
 	digitalWrite(this->trigger_pin, LOW);
 
 	// Convert the received echo pulse in cm.
-	return pulseIn(this->echo_pin, HIGH) / 29.0 / 2.0;
+	ret = (int)(pulseIn(this->echo_pin, HIGH) / 58L);
+	interrupts();
+
+	return ret;
 }

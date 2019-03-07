@@ -11,7 +11,7 @@
 // The radio pipe has the answer to life, the universe and everything.
 #define PIPE 0x4242424242LL
 
-extern char radio_buf[20];
+extern char radio_buf[21];
 extern Signal *signals[SIGNALS_NUMBER];
 extern RemoteSignal *remotes[MAX_REMOTES_NUMBER];
 extern int remotecount;

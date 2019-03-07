@@ -8,7 +8,7 @@ class SRF05
 {
 public:
 	SRF05(int trigger_pin, int echo_pin);
-	double read();
+	int read();
 
 private:
 	int trigger_pin;

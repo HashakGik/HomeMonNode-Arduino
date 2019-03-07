@@ -2,12 +2,13 @@
 #define REMOTESIGNAL_H
 
 // Maximum number of remote signals to listen to.
-#define MAX_REMOTES_NUMBER 32
+#define MAX_REMOTES_NUMBER 16
+#define MAX_HOPS 5
 
 #include "Signal.h"
 #include "RF24.h"
 
-extern char radio_buf[20];
+extern char radio_buf[21];
 extern RF24 *radio;
 
 /*
@@ -21,9 +22,11 @@ public:
 	RemoteSignal(char(&label)[16]);
 	~RemoteSignal();
 	int Get();
-	void Set(int x);
+	void Set(int x, unsigned char hops);
+	unsigned char hops;
 private:
 	int val;
+
 };
 
 
