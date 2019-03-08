@@ -13,5 +13,6 @@ HumiditySignal::~HumiditySignal()
 
 int HumiditySignal::Get()
 {
+  this->dht.read();
 	return this->dht.getHumidity();
 }

@@ -14,5 +14,6 @@ TemperatureSignal::~TemperatureSignal()
 
 int TemperatureSignal::Get()
 {
+  this->dht.read();
 	return this->dht.getTemperature();
 }

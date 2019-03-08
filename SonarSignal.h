@@ -5,7 +5,7 @@
 #include "SRF05.h"
 
 /*
-	Sonar signal class. Uses an SRF-05 sensor to measure a distance in 0.1 mm increments.
+	Sonar signal class. Uses an SRF-05 sensor to measure a distance in cm.
 	Uses two pins.
 */
 class SonarSignal :
